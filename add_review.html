@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review</title>
+</head>
+<body>
+    <h1>Add Review</h1>
+    <form id="reviewForm">
+        <label for="productName">Product Name:</label><br>
+        <input type="text" id="productName" name="productName" required><br><br>
+        <label for="reviewText">Review:</label><br>
+        <textarea id="reviewText" name="reviewText" rows="4" cols="50" required></textarea><br><br>
+        <button type="submit">Add Review</button>
+    </form>
+
+    <p id="error" style="color: red; display: none;">Please fill out all fields.</p>
+
+    <script>
+        document.getElementById('reviewForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var productName = document.getElementById('productName').value;
+            var reviewText = document.getElementById('reviewText').value;
+
+            if (productName.trim() === '' || reviewText.trim() === '') {
+                document.getElementById('error').style.display = 'block';
+            } else {
+                var review = { productName: productName, reviewText: reviewText };
+                var reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+                reviews.push(review);
+                localStorage.setItem('reviews', JSON.stringify(reviews));
+                alert('Review added successfully!');
+                document.getElementById('reviewForm').reset();
+                document.getElementById('error').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

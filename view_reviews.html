@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Reviews</title>
+</head>
+<body>
+    <h1>View Reviews</h1>
+    <div id="reviewsList"></div>
+
+    <script>
+        function showHideReviews(productName) {
+            var reviewsDiv = document.getElementById(productName + "-reviews");
+            var button = document.getElementById(productName + "-button");
+            if (reviewsDiv.style.display === "none") {
+                reviewsDiv.style.display = "block";
+                button.textContent = "Hide Reviews";
+            } else {
+                reviewsDiv.style.display = "none";
+                button.textContent = "Show Reviews";
+            }
+        }
+
+        function deleteReview(productName, reviewText) {
+            var reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+            var updatedReviews = reviews.filter(function(review) {
+                return !(review.productName === productName && review.reviewText === reviewText);
+            });
+            localStorage.setItem('reviews', JSON.stringify(updatedReviews));
+            var remainingReviews = updatedReviews.filter(function(review) {
+                return review.productName === productName;
+            });
+            if (remainingReviews.length === 0) {
+                deleteProduct(productName);
+            } else {
+                renderReviews();
+            }
+        }
+
+        function deleteProduct(productName) {
+            var reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+            var updatedReviews = reviews.filter(function(review) {
+                return review.productName !== productName;
+            });
+            localStorage.setItem('reviews', JSON.stringify(updatedReviews));
+            renderReviews();
+        }
+
+        function renderReviews() {
+            var reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+            var reviewsList = document.getElementById('reviewsList');
+            reviewsList.innerHTML = '';
+
+            if (!reviews || reviews.length === 0) {
+                reviewsList.innerHTML = "<p>No reviews available.</p>";
+                return;
+            }
+
+            var groupedReviews = {};
+
+            reviews.forEach(function(review) {
+                if (review && review.productName && review.reviewText) {
+                    var productName = review.productName;
+                    if (!groupedReviews[productName]) {
+                        groupedReviews[productName] = [];
+                    }
+                    groupedReviews[productName].push(review.reviewText);
+                }
+            });
+
+            for (var productName in groupedReviews) {
+                if (groupedReviews.hasOwnProperty(productName)) {
+                    var reviewTexts = groupedReviews[productName];
+                    var div = document.createElement('div');
+                    div.innerHTML = `
+                        <h3>${productName}</h3>
+                        <button id="${productName}-button" onclick="showHideReviews('${productName}')">Show Reviews</button>
+                        <div id="${productName}-reviews" style="display: none;">
+                            <p><strong>Reviews:</strong></p>
+                            ${reviewTexts.map(review => `
+                                <div>
+                                    <p>${review}</p>
+                                    <button onclick="deleteReview('${productName}', '${review}')">Delete Review</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <hr>
+                    `;
+                    reviewsList.appendChild(div);
+                }
+            }
+        }
+
+        renderReviews();
+    </script>
+</body>
+</html>
